@@ -3,21 +3,20 @@ import { Product } from '../product/product.model.js';
 
 const createOrder = async (req, res) => {
   try {
-    const { consumerId, farmerId, productId, quantity, totalPrice } = req.body;
+    const { consumerId, farmerId, items, totalPrice } = req.body;
     
-    // Decrement product stock
-    const product = await Product.findById(productId);
-    if (!product || product.stock < quantity) {
-      return res.status(400).json({ success: false, message: 'Insufficient stock or product not found' });
+    // Check product stock (decrement happens when farmer accepts)
+    for (const item of items) {
+      const product = await Product.findById(item.productId);
+      if (!product || product.stock < item.quantity) {
+        return res.status(400).json({ success: false, message: `Insufficient stock or product not found for one of the items` });
+      }
     }
-    product.stock -= quantity;
-    await product.save();
 
     const newOrder = await Order.create({
       consumerId,
       farmerId,
-      productId,
-      quantity,
+      items,
       totalPrice,
       status: 'pending' // Update to pending status
     });
@@ -38,11 +37,32 @@ const updateOrderStatus = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Invalid status' });
     }
 
-    const order = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
+    const order = await Order.findById(orderId);
     
     if (!order) {
         return res.status(404).json({ success: false, message: 'Order not found' });
     }
+
+    // When status changes from pending to shipping (or processing), farmer is accepting the order
+    if (order.status === 'pending' && (status === 'shipping' || status === 'processing')) {
+      // Phase 1: Verify all stock is still available before making any deductions
+      for (const item of order.items) {
+        const product = await Product.findById(item.productId);
+        if (!product || product.stock < item.quantity) {
+          return res.status(400).json({ success: false, message: 'Insufficient stock to accept this order' });
+        }
+      }
+
+      // Phase 2: Deduct stock after validation passes
+      for (const item of order.items) {
+        const product = await Product.findById(item.productId);
+        product.stock -= item.quantity;
+        await product.save();
+      }
+    }
+
+    order.status = status;
+    await order.save();
 
     res.status(200).json({ success: true, message: 'Order status updated', data: order });
   } catch (error) {
@@ -55,7 +75,7 @@ const getConsumerOrders = async (req, res) => {
     const { consumerId } = req.params;
     const orders = await Order.find({ consumerId })
       .populate('farmerId', 'name businessName')
-      .populate('productId', 'title imageUrl')
+      .populate('items.productId', 'title imageUrl')
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, data: orders });
@@ -69,7 +89,7 @@ const getFarmerOrders = async (req, res) => {
     const { farmerId } = req.params;
     const orders = await Order.find({ farmerId })
       .populate('consumerId', 'name email')
-      .populate('productId', 'title')
+      .populate('items.productId', 'title')
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, data: orders });

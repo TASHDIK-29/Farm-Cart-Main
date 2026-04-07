@@ -53,4 +53,44 @@ const getAllProducts = async (req, res) => {
   }
 };
 
-export const ProductController = { createProduct, getFarmerProducts, getAllProducts };
+const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, category, price, stock } = req.body;
+    
+    let updateData = { title, description, category };
+    if (price) updateData.price = Number(price);
+    if (stock) updateData.stock = Number(stock);
+    
+    if (req.file) {
+      updateData.imageUrl = `/uploads/${req.file.filename}`;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { new: true });
+    
+    if (!updatedProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+    
+    res.status(200).json({ success: true, message: 'Product updated successfully', data: updatedProduct });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedProduct = await Product.findByIdAndDelete(id);
+    
+    if (!deletedProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+    
+    res.status(200).json({ success: true, message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const ProductController = { createProduct, getFarmerProducts, getAllProducts, updateProduct, deleteProduct };

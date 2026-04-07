@@ -8,6 +8,7 @@ export default function FarmerProducts() {
   const [products, setProducts] = useState<any[]>([]);
   const [formData, setFormData] = useState({ title: '', description: '', category: 'Vegetables', price: '', stock: '' });
   const [image, setImage] = useState<File | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchProducts = async () => {
     if (!user || user.role !== 'farmer') return;
@@ -27,7 +28,40 @@ export default function FarmerProducts() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAddProduct = async (e: React.FormEvent) => {
+  const clearForm = () => {
+    setFormData({ title: '', description: '', category: 'Vegetables', price: '', stock: '' });
+    setImage(null);
+    setEditingId(null);
+  };
+
+  const handleEdit = (product: any) => {
+    setFormData({
+      title: product.title,
+      description: product.description,
+      category: product.category,
+      price: product.price,
+      stock: product.stock,
+    });
+    setImage(null);
+    setEditingId(product._id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    try {
+      const res = await api.delete(`/products/${id}`);
+      if (res.data.success) {
+        alert('Product deleted!');
+        fetchProducts();
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Failed to delete product');
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
@@ -41,16 +75,21 @@ export default function FarmerProducts() {
     if (image) data.append('image', image);
 
     try {
-      const res = await api.post('/products', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      let res;
+      if (editingId) {
+        res = await api.put(`/products/${editingId}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } else {
+        res = await api.post('/products', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+
       if (res.data.success) {
-        alert('Product added!');
-        setFormData({ title: '', description: '', category: 'Vegetables', price: '', stock: '' });
-        setImage(null);
+        alert(`Product ${editingId ? 'updated' : 'added'}!`);
+        clearForm();
         fetchProducts();
       }
     } catch (error) {
       console.error(error);
-      alert('Failed to add product');
+      alert(`Failed to ${editingId ? 'update' : 'add'} product`);
     }
   };
 
@@ -60,8 +99,8 @@ export default function FarmerProducts() {
       
       {/* Add Product Form */}
       <div className="bg-white p-6 rounded shadow-md mb-8">
-        <h3 className="text-xl font-semibold mb-4 border-b pb-2">Add New Product</h3>
-        <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h3 className="text-xl font-semibold mb-4 border-b pb-2">{editingId ? 'Edit Product' : 'Add New Product'}</h3>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Product Title</label>
             <input required name="title" value={formData.title} onChange={handleChange} className="w-full p-2 border rounded bg-gray-50" placeholder="e.g. Fresh Organic Tomatoes" />
@@ -92,10 +131,15 @@ export default function FarmerProducts() {
             <label className="block text-sm font-medium mb-1">Product Image</label>
             <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files?.[0] || null)} className="w-full p-2 border rounded bg-gray-50" />
           </div>
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 flex gap-4">
             <button type="submit" className="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800 transition shadow">
-              🚀 Publish Product
+              {editingId ? '💾 Update Product' : '🚀 Publish Product'}
             </button>
+            {editingId && (
+              <button type="button" onClick={clearForm} className="bg-gray-400 text-white px-6 py-2 rounded hover:bg-gray-500 transition shadow">
+                Cancel Edit
+              </button>
+            )}
           </div>
         </form>
       </div>
@@ -122,6 +166,14 @@ export default function FarmerProducts() {
                  <div className="flex justify-between items-center border-t pt-3">
                    <span className="font-bold text-green-700">${p.price.toFixed(2)}</span>
                    <span className="text-sm text-gray-500">Stock: {p.stock}</span>
+                 </div>
+                 <div className="flex justify-between items-center border-t mt-3 pt-3 gap-2">
+                   <button onClick={() => handleEdit(p)} className="flex-1 bg-blue-50 text-blue-600 px-3 py-1 rounded text-sm hover:bg-blue-100 transition">
+                     Edit
+                   </button>
+                   <button onClick={() => handleDelete(p._id)} className="flex-1 bg-red-50 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-100 transition">
+                     Delete
+                   </button>
                  </div>
                </div>
             </div>

@@ -49,4 +49,32 @@ const removeFromCart = async (req, res) => {
   }
 };
 
-export const CartController = { addToCart, getConsumerCart, removeFromCart };
+const updateCartItemQuantity = async (req, res) => {
+  try {
+    const { cartItemId } = req.params;
+    const { quantity } = req.body;
+
+    if (quantity <= 0) {
+       return res.status(400).json({ success: false, message: 'Quantity must be at least 1' });
+    }
+
+    const cartItem = await Cart.findById(cartItemId).populate('productId');
+    if (!cartItem) {
+      return res.status(404).json({ success: false, message: 'Cart item not found' });
+    }
+
+    if (cartItem.productId.stock < quantity) {
+      return res.status(400).json({ success: false, message: 'Insufficient stock' });
+    }
+
+    cartItem.quantity = quantity;
+    await cartItem.save();
+
+    // Re-populate for response or just send updated
+    res.status(200).json({ success: true, message: 'Quantity updated successfully', data: cartItem });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const CartController = { addToCart, getConsumerCart, removeFromCart, updateCartItemQuantity };

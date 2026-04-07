@@ -54,9 +54,19 @@ export default function FarmerOrdersPage() {
              <div key={order._id} className="bg-white p-6 shadow-sm border border-gray-200 rounded-lg flex flex-col md:flex-row gap-6 justify-between">
               <div>
                 <p className="text-sm text-gray-500 mb-1">Order ID: {order._id}</p>
-                <h4 className="text-lg font-bold text-gray-800">{order.productId?.title || 'Unknown Product'}</h4>
-                <p className="text-green-700 font-medium my-1">Total Earned: ${order.totalPrice.toFixed(2)} (Qty: {order.quantity})</p>
-                <p className="text-sm text-gray-700 mt-2">Customer: <span className="font-semibold">{order.consumerId?.name?.firstName} ({order.consumerId?.email})</span></p>
+                <div className="mb-2">
+                  <h4 className="text-lg font-bold text-gray-800">Items Ordered:</h4>
+                  <ul className="list-disc list-inside text-sm text-gray-700 ml-4 mb-2">
+                    {order.items && order.items.map((item: any, idx: number) => (
+                      <li key={idx}>
+                        <span className="font-semibold">{item.productId?.title || 'Unknown Product'}</span> 
+                        {' '} (Qty: {item.quantity}) - ${(item.price * item.quantity).toFixed(2)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <p className="text-green-700 font-medium my-1">Total Earned: ${order.totalPrice.toFixed(2)}</p>
+                <p className="text-sm text-gray-700 mt-2">Customer: <span className="font-semibold">{order.consumerId?.name?.firstName || order.consumerId?.name} ({order.consumerId?.email})</span></p>
                 <p className="text-xs text-gray-400 mt-2">Ordered at: {new Date(order.createdAt).toLocaleString()}</p>
               </div>
 

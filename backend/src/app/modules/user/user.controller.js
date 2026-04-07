@@ -11,6 +11,8 @@ const register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
+    console.log(existingUser);
+
     const userData = {
       name, email, password, role,
       ...(role === 'farmer' && { businessName, description, location, profileImage })
