@@ -20,8 +20,12 @@ export default function ConsumerNavbar() {
             <Link href="/shop" className={isActive('/shop')}>Shop</Link>
             <Link href="/shop/feed" className={isActive('/shop/feed')}>Feed</Link>
             <Link href="/shop/farmers" className={isActive('/shop/farmers')}>Top Farmers</Link>
-            <Link href="/shop/cart" className={isActive('/shop/cart')}>Cart</Link>
-            <Link href="/shop/orders" className={isActive('/shop/orders')}>My Orders</Link>
+            {user && (
+              <>
+                <Link href="/shop/cart" className={isActive('/shop/cart')}>Cart</Link>
+                <Link href="/shop/orders" className={isActive('/shop/orders')}>My Orders</Link>
+              </>
+            )}
           </div>
         </div>
         

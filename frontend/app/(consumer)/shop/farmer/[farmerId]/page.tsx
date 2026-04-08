@@ -2,12 +2,10 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { useParams } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-hot-toast';
 
 export default function FarmerProfile() {
   const { farmerId } = useParams();
-  const { user } = useAuth();
   
   const [farmer, setFarmer] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
@@ -35,23 +33,6 @@ export default function FarmerProfile() {
     };
     fetchFarmerData();
   }, [farmerId]);
-
-  const handleAddToCart = async (product: any) => {
-    if (!user || user.role !== 'consumer') {
-      toast.error('Please login as a consumer to add items to your cart.');
-      return;
-    }
-    try {
-      const res = await api.post('/cart', {
-        consumerId: user.id,
-        productId: product._id,
-        quantity: 1,
-      });
-      if (res.data.success) toast.success('Added to cart successfully!');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to add to cart.');
-    }
-  };
 
   if (loading) return <div className="text-center py-20 font-medium text-gray-500">Loading farmer profile...</div>;
   if (!farmer) return <div className="text-center py-20 font-medium text-red-500">Farmer not found.</div>;
@@ -109,13 +90,17 @@ export default function FarmerProfile() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {products.map(p => (
-                  <div key={p._id} className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition">
+                  <div 
+                    key={p._id} 
+                    className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition cursor-pointer flex flex-col"
+                    onClick={() => window.location.href = `/shop/product/${p._id}`}
+                  >
                     {p.imageUrl ? (
                       <img src={(process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000') + p.imageUrl} alt={p.title} className="w-full h-48 object-cover" />
                     ) : (
                       <div className="w-full h-48 bg-green-50 flex items-center justify-center text-green-800 text-3xl">🥦</div>
                     )}
-                    <div className="p-4">
+                    <div className="p-4 flex-grow flex flex-col">
                       <div className="mb-2">
                         <h4 className="font-bold text-gray-800 line-clamp-1" title={p.title}>{p.title}</h4>
                       </div>
@@ -125,10 +110,9 @@ export default function FarmerProfile() {
                       <div className="flex justify-between items-center border-t border-gray-100 pt-3 mt-auto">
                         <span className="font-bold text-green-700 text-lg">${p.price.toFixed(2)}</span>
                         <button 
-                          onClick={() => handleAddToCart(p)}
                           className="bg-green-100 text-green-800 px-3 py-1 border border-green-200 hover:bg-green-700 hover:text-white hover:border-green-700 rounded text-sm font-medium transition"
                         >
-                          Add to Cart
+                          View Details
                         </button>
                       </div>
                     </div>

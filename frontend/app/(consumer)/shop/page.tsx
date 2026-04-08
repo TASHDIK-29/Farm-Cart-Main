@@ -1,10 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
 import api from '../../../lib/api';
-import { useAuth } from '../../../context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function ShopIndex() {
-  const { user } = useAuth();
+  const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [category, setCategory] = useState('All');
@@ -39,27 +39,6 @@ export default function ShopIndex() {
   const triggerSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchProducts();
-  };
-
-  const handleAddToCart = async (product: any) => {
-    if (!user || user.role !== 'consumer') {
-      alert("Please login as a consumer to add items to your cart.");
-      return;
-    }
-
-    try {
-      const res = await api.post('/cart', {
-        consumerId: user.id,
-        productId: product._id,
-        quantity: 1, // Defaulting to 1 for quick add
-      });
-      
-      if (res.data.success) {
-        alert("Added to cart successfully!");
-      }
-    } catch (error: any) {
-      alert(error.response?.data?.message || "Failed to add to cart.");
-    }
   };
 
   return (
@@ -100,13 +79,13 @@ export default function ShopIndex() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map(p => (
-            <div key={p._id} className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition">
+            <div key={p._id} className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition cursor-pointer flex flex-col" onClick={() => router.push(`/shop/product/${p._id}`)}>
               {p.imageUrl ? (
                  <img src={(process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000') + p.imageUrl} alt={p.title} className="w-full h-48 object-cover" />
                ) : (
                  <div className="w-full h-48 bg-green-50 flex items-center justify-center text-green-800 text-3xl">🥦</div>
                )}
-               <div className="p-4">
+               <div className="p-4 flex-grow flex flex-col">
                  <div className="flex justify-between items-start mb-2">
                    <h4 className="font-bold text-gray-800 line-clamp-1" title={p.title}>{p.title}</h4>
                  </div>
@@ -119,10 +98,9 @@ export default function ShopIndex() {
                  <div className="flex justify-between items-center border-t border-gray-100 pt-3 mt-auto">
                    <span className="font-bold text-green-700 text-lg">${p.price.toFixed(2)}</span>
                    <button 
-                     onClick={() => handleAddToCart(p)}
                      className="bg-green-100 text-green-800 px-3 py-1 border border-green-200 hover:bg-green-700 hover:text-white hover:border-green-700 rounded text-sm font-medium transition"
                    >
-                     Add to Cart
+                     View Details
                    </button>
                  </div>
                </div>
