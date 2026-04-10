@@ -12,6 +12,7 @@ const orderSchema = new Schema(
       }
     ],
     totalPrice: { type: Number, required: true },
+    deliveryAddress: { type: String, required: true },
     status: { type: String, enum: ['pending', 'processing', 'shipping', 'delivered', 'cancelled'], default: 'pending' }, 
   },
   { timestamps: true }
