@@ -9,6 +9,7 @@ export default function CartPage() {
   const { user } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deliveryAddress, setDeliveryAddress] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -28,6 +29,11 @@ export default function CartPage() {
   };
 
   const handleCheckoutFarmer = async (farmerId: string, items: any[]) => {
+    if (!deliveryAddress.trim()) {
+      toast.error('Please provide a delivery address before checkout.');
+      return;
+    }
+    
     try {
       const orderItems = items.map(item => ({
         productId: item.productId._id,
@@ -42,6 +48,7 @@ export default function CartPage() {
         farmerId: farmerId,
         items: orderItems,
         totalPrice,
+        deliveryAddress,
       };
 
       const { data } = await api.post('/orders', orderPayload);
@@ -105,6 +112,18 @@ export default function CartPage() {
         </div>
       ) : (
         <div className="space-y-10">
+          <div className="bg-white rounded-xl shadow p-6 border border-gray-100 mb-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Delivery Details</h2>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Delivery Address <span className="text-red-500">*</span></label>
+            <textarea
+              rows={3}
+              value={deliveryAddress}
+              onChange={(e) => setDeliveryAddress(e.target.value)}
+              placeholder="Enter your full delivery address"
+              className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+            />
+          </div>
+
           {Object.values(groupedCartItems).map((group: any) => {
             const groupTotal = group.items.reduce((sum, item) => sum + (item.quantity * item.productId.price), 0);
 

@@ -67,6 +67,10 @@ export default function FarmerOrdersPage() {
                 </div>
                 <p className="text-green-700 font-medium my-1">Total Earned: ${order.totalPrice.toFixed(2)}</p>
                 <p className="text-sm text-gray-700 mt-2">Customer: <span className="font-semibold">{order.consumerId?.name?.firstName || order.consumerId?.name} ({order.consumerId?.email})</span></p>
+                <div className="mt-3 p-3 bg-gray-50 rounded text-sm text-gray-700">
+                  <span className="font-semibold">Delivery Address:</span><br/>
+                  {order.deliveryAddress || 'Not provided'}
+                </div>
                 <p className="text-xs text-gray-400 mt-2">Ordered at: {new Date(order.createdAt).toLocaleString()}</p>
               </div>
 
