@@ -3,8 +3,12 @@ import { Product } from '../product/product.model.js';
 
 const createOrder = async (req, res) => {
   try {
-    const { consumerId, farmerId, items, totalPrice } = req.body;
+    const { consumerId, farmerId, items, totalPrice, deliveryAddress } = req.body;
     
+    if (!deliveryAddress) {
+      return res.status(400).json({ success: false, message: 'Delivery address is required' });
+    }
+
     // Check product stock (decrement happens when farmer accepts)
     for (const item of items) {
       const product = await Product.findById(item.productId);
@@ -18,6 +22,7 @@ const createOrder = async (req, res) => {
       farmerId,
       items,
       totalPrice,
+      deliveryAddress,
       status: 'pending' // Update to pending status
     });
 
