@@ -99,6 +99,10 @@ export default function MyOrders() {
                 </div>
                 <p className="text-green-700 font-medium my-1">Total: ${order.totalPrice.toFixed(2)}</p>
                 <p className="text-sm text-gray-700 mt-2">Farmer: <span className="font-semibold">{order.farmerId?.businessName || order.farmerId?.name}</span></p>
+                <div className="mt-3 p-3 bg-gray-50 rounded text-sm text-gray-700">
+                  <span className="font-semibold">Delivery Address:</span><br/>
+                  {order.deliveryAddress || 'Not provided'}
+                </div>
                 <span className="inline-block mt-3 px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full uppercase tracking-wide">
                   {order.status}
                 </span>
