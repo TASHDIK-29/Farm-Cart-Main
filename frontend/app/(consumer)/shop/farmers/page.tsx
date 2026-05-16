@@ -15,7 +15,7 @@ export default function FarmersIndex() {
         if (res.data.success) {
           setFarmers(res.data.data);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch farmers', error);
       }
       setLoading(false);

@@ -16,7 +16,7 @@ export default function FeedPage() {
         // Ensure most recent posts first
         validPosts.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setPosts(validPosts);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch feed', error);
       } finally {
         setLoading(false);

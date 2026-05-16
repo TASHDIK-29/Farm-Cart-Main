@@ -16,7 +16,7 @@ export default function MyOrders() {
       if (res.data.success) {
         setOrders(res.data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch orders', error);
     }
     setLoading(false);
