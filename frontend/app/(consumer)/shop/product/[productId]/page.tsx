@@ -29,7 +29,7 @@ export default function ProductDetails() {
       if (res.data.success) {
         setProduct(res.data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch product details', error);
     }
     setLoading(false);

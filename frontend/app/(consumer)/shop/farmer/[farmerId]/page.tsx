@@ -25,7 +25,7 @@ export default function FarmerProfile() {
         if (farmerRes.data.success) setFarmer(farmerRes.data.data);
         if (productsRes.data.success) setProducts(productsRes.data.data);
         if (postsRes.data.success) setPosts(postsRes.data.data);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch farmer profile', error);
       } finally {
         setLoading(false);

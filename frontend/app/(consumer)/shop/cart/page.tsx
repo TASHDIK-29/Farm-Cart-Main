@@ -60,7 +60,7 @@ export default function CartPage() {
         toast.success('Cart updated');
         loadCart();
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error('Checkout failed: ' + (error.response?.data?.message || error.message));
     }
   };
@@ -70,19 +70,19 @@ export default function CartPage() {
       await api.delete(`/cart/${cartItemId}`);
       setCartItems(prev => prev.filter(item => item._id !== cartItemId));
       if (showToast) toast.success('Removed from cart');
-    } catch (error) {
+    } catch (error: any) {
       toast.error('Failed to remove item');
     }
   };
 
-  const handleUpdateQuantity = async (cartItemId, newQuantity) => {
+  const handleUpdateQuantity = async (cartItemId: string, newQuantity: number) => {
     if (newQuantity <= 0) return;
     try {
       const { data } = await api.patch(`/cart/${cartItemId}`, { quantity: newQuantity });
       if (data.success) {
         setCartItems(prev => prev.map(item => item._id === cartItemId ? { ...item, quantity: newQuantity } : item));
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to update quantity');
     }
   };
